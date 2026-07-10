@@ -1,26 +1,56 @@
 // Lead form: builds a brief for Pierre and offers several ways to actually send it.
+//
 // mailto: only works if the visitor has a desktop mail app registered as the OS
 // default — most Gmail/Outlook-web users on desktop don't, so a bare mailto link
-// silently does nothing for them. We attempt it, but always back it with a Gmail
-// compose link and a copy-to-clipboard fallback so no visitor is stuck.
+// silently does nothing for them. On mobile the mail app is (almost) always
+// present, so we auto-open it there. On desktop we DON'T auto-fire mailto (it
+// would just look like nothing happened); instead we present webmail options
+// (Gmail, Outlook), the mail-app link for those who do have one, WhatsApp, and a
+// copy-to-clipboard fallback so no visitor is ever stuck.
 (function () {
   var EMAIL = 'lavarietataiwan@gmail.com';
+  // WhatsApp number in international format, digits only (no +, spaces, or dashes).
+  // Placeholder — swap for Pierre's WhatsApp-capable mobile number when available.
+  var WHATSAPP = '18606340433';
+
   var form = document.getElementById('lead-form');
   var done = document.getElementById('lead-done');
   var briefText = document.getElementById('brief-text');
   var copyStatus = document.getElementById('copy-status');
-  var current = { subject: '', body: '' };
+  var sendIntro = document.getElementById('send-intro');
+  var whatsappLink = document.getElementById('open-whatsapp');
+  var current = { subject: '', body: '', waText: '' };
 
-  function buildBrief() {
+  // iPhones/Androids reliably have a mail app; iPadOS reports as "Macintosh" but
+  // has touch points, so treat multi-touch Macs as tablets too.
+  function isMobileDevice() {
+    var ua = navigator.userAgent || '';
+    if (/Android|iPhone|iPod|iPad|IEMobile|BlackBerry|Opera Mini|Mobile/i.test(ua)) return true;
+    return navigator.maxTouchPoints > 1 && /Macintosh/.test(ua);
+  }
+
+  function collectLines() {
     var lines = [];
     form.querySelectorAll('input, select, textarea').forEach(function (f) {
       if (f.name && f.value && f.value.trim()) lines.push(f.name + ': ' + f.value.trim());
     });
+    return lines;
+  }
+
+  function buildBrief() {
+    var lines = collectLines();
     var companyField = form.querySelector('[name="Company"]');
     var company = companyField ? companyField.value.trim() : '';
     var subject = 'Sourcing Review Request' + (company ? ' — ' + company : '');
     var body = 'Hello Pierre,\n\nI would like to request a sourcing review.\n\n' + lines.join('\n') + '\n\n(Attach any product photos or specs to this email.)';
-    return { subject: subject, body: body };
+    // WhatsApp has no subject line and no attachments prompt, so fold the subject
+    // into the first line and adjust the closing note.
+    var waText = subject + '\n\nHello Pierre, I would like to request a sourcing review.\n\n' + lines.join('\n') + '\n\n(I can share product photos, specs, or samples.)';
+    return { subject: subject, body: body, waText: waText };
+  }
+
+  function mailtoUrl() {
+    return 'mailto:' + EMAIL + '?subject=' + encodeURIComponent(current.subject) + '&body=' + encodeURIComponent(current.body);
   }
 
   function copyToClipboard(text) {
@@ -47,8 +77,19 @@
     briefText.value = 'To: ' + EMAIL + '\nSubject: ' + current.subject + '\n\n' + current.body;
     copyStatus.textContent = '';
 
-    // best-effort: works for the subset of visitors with a desktop mail app configured
-    window.location.href = 'mailto:' + EMAIL + '?subject=' + encodeURIComponent(current.subject) + '&body=' + encodeURIComponent(current.body);
+    // point the WhatsApp button at a pre-filled chat with Pierre
+    whatsappLink.href = 'https://wa.me/' + WHATSAPP + '?text=' + encodeURIComponent(current.waText);
+
+    if (isMobileDevice()) {
+      // mobile: the mail app is reliably present, so open it pre-filled
+      sendIntro.textContent = 'We’ve opened your mail app with the brief ready to send. If nothing opened, choose an option below.';
+      window.location.href = mailtoUrl();
+    } else {
+      // desktop: firing mailto here would look like nothing happened for the many
+      // visitors on Gmail/Outlook web, so let them pick a channel instead
+      sendIntro.textContent = 'Pick how you’d like to send your brief to Pierre.';
+    }
+
     // best-effort: silently succeeds or fails depending on clipboard permissions
     copyToClipboard(briefText.value).catch(function () {});
 
@@ -63,8 +104,14 @@
     window.open(url, '_blank', 'noopener');
   });
 
+  document.getElementById('open-outlook').addEventListener('click', function () {
+    var url = 'https://outlook.live.com/mail/0/deeplink/compose?to=' + encodeURIComponent(EMAIL) +
+      '&subject=' + encodeURIComponent(current.subject) + '&body=' + encodeURIComponent(current.body);
+    window.open(url, '_blank', 'noopener');
+  });
+
   document.getElementById('open-mailapp').addEventListener('click', function () {
-    window.location.href = 'mailto:' + EMAIL + '?subject=' + encodeURIComponent(current.subject) + '&body=' + encodeURIComponent(current.body);
+    window.location.href = mailtoUrl();
   });
 
   document.getElementById('copy-brief').addEventListener('click', function () {
