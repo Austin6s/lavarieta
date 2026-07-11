@@ -19,7 +19,15 @@
   var copyStatus = document.getElementById('copy-status');
   var sendIntro = document.getElementById('send-intro');
   var whatsappLink = document.getElementById('open-whatsapp');
+  var mailAppBtn = document.getElementById('open-mailapp');
   var current = { subject: '', body: '', waText: '' };
+
+  // "Open in Mail App" relies on mailto:, which does nothing on a desktop with no
+  // registered mail client — most desktop visitors use webmail, so the button just
+  // looks broken. Show it only on mobile, where a mail app is reliably present and
+  // it's the fallback for the auto-open. Desktop users who use a mail client still
+  // have the "Email Pierre directly" mailto link at the foot of the panel.
+  if (!isMobileDevice()) mailAppBtn.style.display = 'none';
 
   // iPhones/Androids reliably have a mail app; iPadOS reports as "Macintosh" but
   // has touch points, so treat multi-touch Macs as tablets too.
