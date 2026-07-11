@@ -9,9 +9,9 @@
 // copy-to-clipboard fallback so no visitor is ever stuck.
 (function () {
   var EMAIL = 'lavarietataiwan@gmail.com';
-  // WhatsApp number in international format, digits only (no +, spaces, or dashes).
-  // Placeholder — swap for Pierre's WhatsApp-capable mobile number when available.
-  var WHATSAPP = '18606340433';
+  // Pierre's WhatsApp number in international format, digits only (no +, spaces, or
+  // dashes). Taiwan mobile 0976-271-060 → country code 886 + number without the 0.
+  var WHATSAPP = '886976271060';
 
   var form = document.getElementById('lead-form');
   var done = document.getElementById('lead-done');
