@@ -13,8 +13,8 @@ lavarietataiwan@gmail.com, and WhatsApp links open wa.me.
 | Chatbot | In the page, no requests | `chatbot.js` | Fine |
 | Form, email, WhatsApp | The visitor's own mail app, Gmail, Outlook or WhatsApp | `script.js` | Fine; no server of ours sees the brief |
 
-**Deploy guard:** none needed; there is no data store. The rule is in `CLAUDE.md`.
-**Note:** with `.nojekyll`, GitHub Pages serves every file in the repo, so committing `CLAUDE.md` and
+**Deploy guard:** none needed; there is no data store. The rule is in `AGENTS.md`.
+**Note:** with `.nojekyll`, GitHub Pages serves every file in the repo, so committing `AGENTS.md`, `CLAUDE.md` and
 this file publishes them at lavarietasourcing.com. They hold nothing private, but you may prefer to
 keep them out of the repo.
 **Optional:** self-host Cormorant Garamond and Karla instead of loading them from Google.
